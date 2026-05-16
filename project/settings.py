@@ -59,15 +59,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'project.wsgi.application'
 
-# Database
-import dj_database_url
-if(os.getenv('DEBUG')=='False'):
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=os.getenv('DBURL'),
-            conn_max_age=600,  # Persistent connections for performance
-        )
-    }
+# # Database
+# import dj_database_url
+# if(os.getenv('DEBUG')=='False'):
+#     DATABASES = {
+#         'default': dj_database_url.config(
+#             default=os.getenv('DBURL'),
+#             conn_max_age=600,  # Persistent connections for performance
+#         )
+#     }
 # else:
 #     DATABASES = {
 #         'default': {
@@ -82,6 +82,17 @@ if(os.getenv('DEBUG')=='False'):
 #             },
 #         }
 #     }
+
+
+import dj_database_url
+
+DATABASES = {
+    'default': dj_database_url.parse(
+        os.getenv('DBURL'),
+        conn_max_age=600,
+        ssl_require=True
+    )
+}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
