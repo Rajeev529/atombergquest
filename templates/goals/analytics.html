@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Analytics</h2>
+<h3>QoQ Progress Trends</h3>
+<ul>
+{% for t in trends %}
+    <li>{{ t.quarter }}: {{ t.progress|floatformat:1 }}%</li>
+{% endfor %}
+</ul>
+<h3>Goal Distribution by Thrust Area</h3>
+<ul>
+{% for d in thrust_distribution %}
+    <li>{{ d.thrust_area }}: {{ d.count }} goals</li>
+{% endfor %}
+</ul>
+{% endblock %}

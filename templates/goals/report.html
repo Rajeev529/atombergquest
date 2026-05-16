@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Achievement Report</h2>
+<a href="?export=csv" class="btn">Export CSV</a>
+<table>
+    <thead><tr><th>Employee</th><th>Goal</th><th>Target</th><th>Actual</th><th>Progress</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for row in report_data %}
+    <tr>
+        <td>{{ row.employee }}</td>
+        <td>{{ row.goal }}</td>
+        <td>{{ row.target }}</td>
+        <td>{{ row.actual }}</td>
+        <td>{{ row.progress }}</td>
+        <td>{{ row.status }}</td>
+    </tr>
+    {% empty %}<tr><td colspan="6">No data</td></tr>{% endfor %}
+    </tbody>
+</table>
+{% endblock %}

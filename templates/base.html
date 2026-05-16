@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>GoalQuest Portal</title>
+    <style>
+        /* ----- THEME COLORS (will be applied via body class) ----- */
+        body.theme-ocean {
+            --bg-primary: #e0f2fe;
+            --bg-card: #ffffff;
+            --text-primary: #0c4a6e;
+            --brand-blue: #0284c7;
+            --brand-blue-dark: #0369a1;
+            --border-light: #bae6fd;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        body.theme-sunset {
+            --bg-primary: #ffedd5;
+            --bg-card: #fff7ed;
+            --text-primary: #9a3412;
+            --brand-blue: #ea580c;
+            --brand-blue-dark: #c2410c;
+            --border-light: #fed7aa;
+        }
+        body.theme-forest {
+            --bg-primary: #d1fae5;
+            --bg-card: #ecfdf5;
+            --text-primary: #064e3b;
+            --brand-blue: #059669;
+            --brand-blue-dark: #047857;
+            --border-light: #a7f3d0;
+        }
+        body.theme-midnight {
+            --bg-primary: #1e1b4b;
+            --bg-card: #2e2a5e;
+            --text-primary: #e0e7ff;
+            --brand-blue: #6366f1;
+            --brand-blue-dark: #4f46e5;
+            --border-light: #4338ca;
+        }
+        /* ----- Global styles (use var) ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: -apple-system, 'Segoe UI', Roboto, system-ui;
+            transition: background 0.2s ease, color 0.2s;
+            line-height: 1.5;
+        }
+        .navbar {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-light);
+            padding: 0.75rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+        .navbar-brand {
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: var(--brand-blue);
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+        }
+        .nav-links a, .nav-links button {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .nav-links a:hover, .nav-links button:hover {
+            color: var(--brand-blue);
+        }
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+        }
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.25rem;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+        }
+        .btn {
+            display: inline-block;
+            background: var(--brand-blue);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .btn-secondary {
+            background: #f1f5f9;
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        table {
+            width: 100%;
+            background: var(--bg-card);
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .alert-success { background: #d1fae5; color: #065f46; border-left: 4px solid #10b981; }
+        .alert-error { background: #fee2e2; color: #991b1b; border-left: 4px solid #dc2626; }
+        .progress-bar {
+            background: #e2e8f0;
+            border-radius: 999px;
+            height: 8px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: #10b981;
+            height: 100%;
+            width: 0%;
+        }
+        /* Theme Dropdown */
+        .theme-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .theme-select-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .theme-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            min-width: 160px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .theme-menu.show { display: block; }
+        .theme-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-light);
+            width: 100%;
+            background: none;
+            border: none;
+            text-align: left;
+        }
+        .theme-item:last-child { border-bottom: none; }
+        .theme-item:hover { background: rgba(0,0,0,0.05); }
+        .theme-item.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        /* Mobile */
+        @media (max-width: 768px) {
+            .navbar { padding: 0.75rem 1rem; }
+            .container { padding: 1rem; }
+            .menu-toggle { display: block; }
+            .nav-links {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+                padding-top: 1rem;
+                margin-top: 0.75rem;
+                border-top: 1px solid var(--border-light);
+            }
+            .nav-links.show { display: flex; }
+            .grid-3 { grid-template-columns: 1fr; }
+            /* Responsive tables */
+            table, thead, tbody, th, td, tr { display: block; }
+            thead { display: none; }
+            tr {
+                margin-bottom: 1rem;
+                border: 1px solid var(--border-light);
+                border-radius: 12px;
+                padding: 0.5rem;
+            }
+            td {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.5rem;
+                border: none;
+            }
+            td:before {
+                content: attr(data-label);
+                font-weight: 600;
+                width: 45%;
+            }
+        }
+    </style>
+</head>
+<body class="theme-{{ current_theme|default:'ocean' }}">
+    <nav class="navbar">
+        <div class="navbar-brand">🎯 GoalQuest</div>
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <div class="nav-links" id="navLinks">
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'report' %}">Reports</a>
+            {% if user.role == 'EMPLOYEE' %}
+                <a href="{% url 'create_goal' %}">New Goal</a>
+                <a href="{% url 'quarterly_update' %}">Update Progress</a>
+            {% elif user.role == 'MANAGER' %}
+                <a href="{% url 'approve_goals' %}">Approve Goals</a>
+                <a href="{% url 'team_checkins' %}">Team Check-ins</a>
+                <a href="{% url 'create_shared_goal' %}">Share Goal</a>
+            {% elif user.role == 'ADMIN' %}
+                <a href="{% url 'completion_dashboard' %}">Completion</a>
+                <a href="{% url 'audit_log' %}">Audit Log</a>
+                <a href="{% url 'analytics' %}">Analytics</a>
+            {% endif %}
+            
+            <!-- Theme Dropdown -->
+            <div class="theme-dropdown">
+                <button class="theme-select-btn" id="themeDropdownBtn">🎨 Theme ▼</button>
+                <div class="theme-menu" id="themeMenu">
+                    {% for key, theme in available_themes.items %}
+                        {% if key in unlocked_themes %}
+                            <form method="post" action="{% url 'change_theme' %}" style="margin:0">
+                                {% csrf_token %}
+                                <button type="submit" name="theme" value="{{ key }}" class="theme-item">
+                                    {{ theme.icon }} {{ theme.name }}
+                                </button>
+                            </form>
+                        {% else %}
+                            <div class="theme-item disabled" title="Need {{ theme.required_performance }}% performance">
+                                🔒 {{ theme.name }} ({{ theme.required_performance }}%)
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Logout -->
+            <form method="post" action="{% url 'logout' %}" style="margin:0">
+                {% csrf_token %}
+                <button type="submit" style="background:none; border:none; cursor:pointer;">Logout ({{ user.username }})</button>
+            </form>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+
+    <div style="position: fixed; bottom: 1rem; right: 1rem; background: var(--bg-card); padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.7rem; border:1px solid var(--border-light);">
+        🏆 Perf: {{ user.performance_score|floatformat:0 }}%
+    </div>
+
+    <script>
+        // Mobile menu
+        const toggle = document.getElementById('menuToggle');
+        const links = document.getElementById('navLinks');
+        if(toggle) toggle.onclick = () => links.classList.toggle('show');
+        // Theme dropdown
+        const themeBtn = document.getElementById('themeDropdownBtn');
+        const themeMenu = document.getElementById('themeMenu');
+        if(themeBtn) {
+            themeBtn.onclick = (e) => {
+                e.stopPropagation();
+                themeMenu.classList.toggle('show');
+            };
+            document.addEventListener('click', function() {
+                themeMenu.classList.remove('show');
+            });
+        }
+    </script>
+</body>
+</html>

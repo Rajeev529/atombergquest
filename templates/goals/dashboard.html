@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Welcome Header -->
+    <div class="welcome-header card">
+        <h1>Welcome back, {{ user.get_full_name|default:user.username }} 👋</h1>
+        <p>Role: {{ user.role }} | Performance Score: <strong>{{ user.performance_score|floatformat:1 }}%</strong></p>
+    </div>
+
+    {% if user.role == 'EMPLOYEE' %}
+        <!-- Employee Dashboard -->
+        <div class="grid-3">
+            <div class="card">
+                <h3>📊 Overall Progress</h3>
+                <div class="progress-circle" data-progress="{{ overall_progress|floatformat:0 }}">
+                    <canvas id="progressRing" width="120" height="120"></canvas>
+                    <div class="progress-text">{{ overall_progress|floatformat:0 }}%</div>
+                </div>
+                <p>Total Goals: {{ total_goals }} | Approved: {{ approved_goals }}</p>
+                {% if can_create_goals %}
+                    <a href="{% url 'create_goal' %}" class="btn">+ New Goal</a>
+                {% endif %}
+            </div>
+            <div class="card">
+                <h3>📈 Goal Progress (Bar Chart)</h3>
+                <canvas id="goalProgressChart" height="200"></canvas>
+            </div>
+            <div class="card">
+                <h3>📅 Quarterly Performance Trend</h3>
+                <canvas id="quarterlyTrendChart" height="200"></canvas>
+            </div>
+            <div class="card">
+                <h3>🎯 Goals by Thrust Area</h3>
+                <canvas id="thrustPieChart" height="200"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📋 Your Goals Details</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr><th>Title</th><th>Thrust Area</th><th>Target</th><th>Weight</th><th>Progress</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for goal in goals %}
+                    <tr>
+                        <td data-label="Title">{{ goal.title }}</td>
+                        <td data-label="Area">{{ goal.thrust_area }}</td>
+                        <td data-label="Target">{{ goal.target_value|default:goal.target_date }}</td>
+                        <td data-label="Weight">{{ goal.weightage }}%</td>
+                        <td data-label="Progress"><div class="progress-bar"><div class="progress-fill" style="width: {{ goal.get_progress|floatformat:0 }}%"></div></div>{{ goal.get_progress|floatformat:0 }}%</td>
+                        <td data-label="Status">{{ goal.status }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6">No goals yet. Create one!</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    {% elif user.role == 'MANAGER' %}
+        <!-- Manager Dashboard -->
+        <div class="grid-3">
+            <div class="card">
+                <h3>👥 Team Summary</h3>
+                <p>Team Size: {{ team_size }}</p>
+                <p>Pending Approvals: {{ pending_approvals }}</p>
+                <p>Team Goals: {{ team_goals }}</p>
+                <p>Check-in Rate: {{ checkin_completion|floatformat:0 }}%</p>
+            </div>
+            <div class="card">
+                <h3>🏆 Team Performance</h3>
+                <canvas id="teamPerformanceChart" height="200"></canvas>
+            </div>
+            <div class="card">
+                <h3>📈 Team Average Progress (Quarterly)</h3>
+                <canvas id="teamTrendChart" height="200"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📋 Team Members</h3>
+            <div class="table-responsive">
+                <table>
+                    <thead><tr><th>Employee</th><th>Performance</th><th>Actions</th></tr></thead>
+                    <tbody>
+                    {% for emp in subordinates %}
+                    <tr>
+                        <td data-label="Employee">{{ emp.username }}</td>
+                        <td data-label="Performance"><div class="progress-bar"><div class="progress-fill" style="width: {{ emp.performance_score|floatformat:0 }}%"></div></div>{{ emp.performance_score|floatformat:0 }}%</td>
+                        <td data-label="Actions"><a href="{% url 'team_checkins' %}" class="btn-small">Check-in</a></td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    {% elif user.role == 'ADMIN' %}
+        <!-- Admin Dashboard -->
+        <div class="grid-3">
+            <div class="card">
+                <h3>🏢 Org Overview</h3>
+                <p>Total Users: {{ total_users }}</p>
+                <p>Total Goals: {{ total_goals }}</p>
+                <p>Approval Rate: {{ completion_rate|floatformat:0 }}%</p>
+                <p>Pending Approvals: {{ pending_approvals }}</p>
+            </div>
+            <div class="card">
+                <h3>📊 Goal Distribution by Thrust Area</h3>
+                <canvas id="adminThrustChart" height="200"></canvas>
+            </div>
+            <div class="card">
+                <h3>📈 Organization QoQ Progress</h3>
+                <canvas id="orgQoQChart" height="200"></canvas>
+            </div>
+            <div class="card">
+                <h3>🏅 Top 5 Employees</h3>
+                <ul>
+                {% for emp in top_employees %}
+                    <li>{{ emp.username }} - {{ emp.performance_score|floatformat:0 }}%</li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if user.role == 'EMPLOYEE' %}
+            // Bar chart: Goal progress
+            const goalCtx = document.getElementById('goalProgressChart').getContext('2d');
+            new Chart(goalCtx, {
+                type: 'bar',
+                data: {
+                    labels: {{ goal_labels_json|safe }},
+                    datasets: [{
+                        label: 'Progress (%)',
+                        data: {{ goal_progress_json|safe }},
+                        backgroundColor: '#10b981',
+                        borderRadius: 6
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: true, scales: { y: { max: 100, title: { display: true, text: 'Progress (%)' } } } }
+            });
+
+            // Line chart: Quarterly trend
+            const trendCtx = document.getElementById('quarterlyTrendChart').getContext('2d');
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: {{ quarter_labels_json|safe }},
+                    datasets: [{
+                        label: 'Your Avg Progress',
+                        data: {{ quarterly_scores_json|safe }},
+                        borderColor: '#0284c7',
+                        tension: 0.2,
+                        fill: false
+                    }]
+                },
+                options: { responsive: true }
+            });
+
+            // Pie chart: Thrust area
+            const pieCtx = document.getElementById('thrustPieChart').getContext('2d');
+            new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: {{ thrust_labels_json|safe }},
+                    datasets: [{
+                        data: {{ thrust_values_json|safe }},
+                        backgroundColor: ['#f97316', '#10b981', '#6366f1', '#ec489a', '#14b8a6']
+                    }]
+                }
+            });
+
+            // Progress ring (simple canvas ring)
+            const progress = {{ overall_progress|floatformat:0 }};
+            const canvas = document.getElementById('progressRing');
+            if(canvas) {
+                const ctx = canvas.getContext('2d');
+                const centerX = 60, centerY = 60, radius = 50, startAngle = -0.5 * Math.PI;
+                const endAngle = startAngle + (progress / 100) * 2 * Math.PI;
+                ctx.clearRect(0,0,120,120);
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, 2*Math.PI);
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.lineWidth = 12;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.strokeStyle = '#10b981';
+                ctx.stroke();
+            }
+
+        {% elif user.role == 'MANAGER' %}
+            // Team performance bar chart
+            const teamPerf = {{ team_performance_json|safe }};
+            const teamNames = teamPerf.map(p => p.name);
+            const teamScores = teamPerf.map(p => p.score);
+            const teamCtx = document.getElementById('teamPerformanceChart').getContext('2d');
+            new Chart(teamCtx, {
+                type: 'bar',
+                data: { labels: teamNames, datasets: [{ label: 'Performance Score (%)', data: teamScores, backgroundColor: '#6366f1' }] },
+                options: { responsive: true, scales: { y: { max: 100 } } }
+            });
+            // Team quarterly trend
+            const teamTrendCtx = document.getElementById('teamTrendChart').getContext('2d');
+            new Chart(teamTrendCtx, {
+                type: 'line',
+                data: { labels: {{ quarter_labels_json|safe }}, datasets: [{ label: 'Team Avg Progress', data: {{ team_avg_progress_json|safe }}, borderColor: '#ea580c' }] }
+            });
+
+        {% elif user.role == 'ADMIN' %}
+            const adminThrustCtx = document.getElementById('adminThrustChart').getContext('2d');
+            new Chart(adminThrustCtx, {
+                type: 'pie',
+                data: { labels: {{ thrust_labels_json|safe }}, datasets: [{ data: {{ thrust_counts_json|safe }}, backgroundColor: ['#0284c7','#10b981','#f59e0b','#ef4444','#8b5cf6'] }] }
+            });
+            const orgQoCtx = document.getElementById('orgQoQChart').getContext('2d');
+            new Chart(orgQoCtx, {
+                type: 'line',
+                data: { labels: {{ quarter_labels_json|safe }}, datasets: [{ label: 'Org Avg Progress', data: {{ org_qoq_progress_json|safe }}, borderColor: '#10b981', fill: false }] }
+            });
+        {% endif %}
+    });
+</script>
+
+<style>
+    .dashboard-container .card { margin-bottom: 1.5rem; }
+    .progress-circle { position: relative; width: 120px; height: 120px; margin: 0 auto; }
+    .progress-circle canvas { position: absolute; top: 0; left: 0; }
+    .progress-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.4rem; font-weight: bold; }
+    .table-responsive { overflow-x: auto; }
+    .btn-small { padding: 0.25rem 0.5rem; font-size: 0.75rem; background: var(--brand-blue); color: white; border-radius: 4px; text-decoration: none; }
+    @media (max-width: 768px) {
+        .grid-3 { grid-template-columns: 1fr; }
+        canvas { max-height: 250px; }
+    }
+</style>
+{% endblock %}

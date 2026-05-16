@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Pending Goal Approvals</h2>
+{% for goal in pending_goals %}
+<div class="card">
+    <h3>{{ goal.title }}</h3>
+    <p>Employee: {{ goal.owner.username }}</p>
+    <p>Thrust Area: {{ goal.thrust_area }}</p>
+    <p>Weightage: {{ goal.weightage }}%</p>
+    <p>Target: {{ goal.target_value }}</p>
+    <form method="post" style="display: inline;">
+        {% csrf_token %}
+        <input type="hidden" name="goal_id" value="{{ goal.id }}">
+        <button type="submit" name="action" value="approve" class="btn btn-success">Approve</button>
+        <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+    </form>
+    <form method="post" style="display: inline;">
+        {% csrf_token %}
+        <input type="hidden" name="goal_id" value="{{ goal.id }}">
+        <input type="number" name="weightage" placeholder="New weightage" step="1">
+        <input type="number" name="target_value" placeholder="New target" step="any">
+        <button type="submit" name="action" value="edit" class="btn">Edit & Approve</button>
+    </form>
+</div>
+{% empty %}
+<p>No pending approvals</p>
+{% endfor %}
+{% endblock %}

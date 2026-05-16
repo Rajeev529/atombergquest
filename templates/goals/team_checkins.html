@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Team Check-ins - {{ quarter.name }}</h2>
+{% for data in team_data %}
+<div class="card">
+    <h3>{{ data.employee.username }}</h3>
+    <p>Overall Progress: {{ data.total_progress|floatformat:1 }}%</p>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="employee_id" value="{{ data.employee.id }}">
+        <label>Check-in Comment:</label>
+        <textarea name="comment" rows="2" style="width:100%">{{ data.checkin.comment|default:'' }}</textarea>
+        <button type="submit" class="btn">Save Check-in</button>
+    </form>
+    <hr>
+    <h4>Goals</h4>
+    {% for g in data.goals %}
+        <div><strong>{{ g.goal.title }}</strong> - Target: {{ g.goal.target_value }} | Actual: {{ g.achievement.actual_value|default:'Not updated' }} | Progress: {{ g.progress|floatformat:1 }}%</div>
+    {% endfor %}
+</div>
+{% endfor %}
+{% endblock %}

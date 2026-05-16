@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card" style="max-width: 400px; margin: 100px auto;">
+    <h2>Login to GoalQuest</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">Login</button>
+    </form>
+    <hr>
+    <p><strong>Demo Accounts:</strong></p>
+    <p>Employee: employee / employee123</p>
+    <p>Manager: manager / manager123</p>
+    <p>Admin: admin / admin123</p>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Completion Dashboard - {{ quarter.name }}</h2>
+<h3>Employees</h3>
+<table>
+    <tr><th>Employee</th><th>Goals Submitted</th><th>Check-in Done</th></tr>
+    {% for emp in employee_status %}
+    <tr>
+        <td>{{ emp.employee.username }}</td>
+        <td>{{ emp.goals_submitted|yesno:"✅,❌" }}</td>
+        <td>{{ emp.has_checkin|yesno:"✅,❌" }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<h3>Managers</h3>
+<table>
+    <tr><th>Manager</th><th>Check-ins Completed / Total Team</th><th>Rate</th></tr>
+    {% for mgr in manager_status %}
+    <tr>
+        <td>{{ mgr.manager.username }}</td>
+        <td>{{ mgr.checkins_completed }} / {{ mgr.total_team }}</td>
+        <td>{{ mgr.completion_rate|floatformat:0 }}%</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

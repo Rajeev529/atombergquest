@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block content %}
+<h2>Quarterly Update - {{ quarter.name }} {{ quarter.year }}</h2>
+<form method="post">
+    {% csrf_token %}
+    {% for goal in goals %}
+    <div class="card">
+        <h3>{{ goal.title }}</h3>
+        <p>Target: {{ goal.target_value }} ({{ goal.uom_type }})</p>
+        <label>Actual Achievement:</label>
+        <input type="number" name="actual_{{ goal.id }}" value="{{ achievements|dict_get:goal.id }}">
+        <label>Status:</label>
+        <select name="status_{{ goal.id }}">
+            <option value="NOT_STARTED">Not Started</option>
+            <option value="ON_TRACK">On Track</option>
+            <option value="COMPLETED">Completed</option>
+        </select>
+        <p>Progress: {{ goal.get_progress|floatformat:1 }}%</p>
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn">Submit Update</button>
+</form>
+{% endblock %}

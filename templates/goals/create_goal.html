@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <h2>Create New Goal</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">Submit for Approval</button>
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+    <p><small>Note: Total weightage must be 100% across all goals. Min 10% per goal. Max 8 goals.</small></p>
+</div>
+{% endblock %}

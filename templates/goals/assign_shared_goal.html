@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <h2>Assign Shared Goal: {{ shared_goal.title }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">Assign</button>
+    </form>
+</div>
+{% endblock %}
